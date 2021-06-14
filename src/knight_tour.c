@@ -16,32 +16,53 @@
 /******************************************************************************/
 int Tour(int position, unsigned char path[64])
 {
-/*	asserts*/
-/*	*/
-/*	unsigned long board = 0;*/
-/*	*/
-/*	return (TourImp(path, position, board, 1));*/
+	/*	create board of 8X8 as an unsigned long (64 bits) 			*/
+	unsigned long board = 0;
+	
+	/*	create path array which will store the right path (if exists)	*/
+	/*	a '1' bit will indicate on a visited location on the board 		*/ 
+	unsigned char path[64] = {0};
+	
+	/*	asserts*/
+	assert(position > -1);
+	assert(path);
+	
+	return (TourImp(path, position, board, 1));
 }
 /******************************************************************************/
 int TourImp(unsigned char path[64], int pos, unsigned long board, int step_num)
 {
-/*	asserts*/
-/*	*/
-/*	if this is the last step*/
-/*		update path to be as boar*/
-/*		return 0*/
-/*		*/
-/*	if this is out of bounds OR*/
-/*		return 1*/
-/*		*/
-/*	if this is already a visited location*/
-/*		return 1*/
-/*		*/
-/*	(may combine the 2 failure as one if with OR opeartor)*/
-/*	*/
-/*	recursively call 8 available positions with AND opeartor between them*/
-/*	*/
-/*	if the result of this AND is zero it means some one them has succeeed so return 0*/
-/*	otherwise return 1.*/
+	/*	asserts*/
+	assert(path);
+	
+	/*	if this is the last step*/
+	/*		update path to be as board*/
+	/*		return 0*/
+	if (64 == step_num)
+	{
+		board ^= (1 << pos);
+		path = board;
+		return (0);
+	}
+	
+	/*	if this is step leads out of bounds or to a previously visited location */
+	/*		return 1*/
+	if (63 < pos || board & (1 << pos))
+	{
+		return (1);
+	}
+
+
+	/*	increment step and tick curr position at the board*/
+	++step_num;
+	
+	board ^= (1 << pos);
+		
+	/*	recursively call 8 available positions 	*/
+	TourImp()
+	
+	
+	/*	if path is not 0*/
+	return (path == 0);
 	
 }

@@ -12,6 +12,14 @@
 
 /********************************* Inclusions *********************************/
 
+#include <assert.h>	/*	assert	*/
+
+enum { NUM_OF_ROWS = 8, NUM_OF_COLUMNS = 8};
+/**************************** Forward Declarations ****************************/
+
+static void IndexToCartesian(int index, int *x, int *y);
+
+static int CartesianToIndex(int *x, int *y);
 
 /******************************************************************************/
 int Tour(int position, unsigned char path[64])
@@ -73,4 +81,19 @@ int TourImp(unsigned char path[64], int pos, unsigned long board, int step_num)
 	/*	if path is not 0*/
 	return (is_path_found);
 	
+}
+/******************************************************************************/
+static void IndexToCartesian(int index, int *x, int *y)
+{
+	assert(x && y);
+	
+	*x = index / NUM_OF_ROWS;
+	*y = index % NUM_OF_COLUMNS;
+}
+/******************************************************************************/
+static int CartesianToIndex(int *x, int *y)
+{
+	assert(x && y);
+	
+	return ((*x * NUM_OF_ROWS) + *y);
 }

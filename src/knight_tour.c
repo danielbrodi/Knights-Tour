@@ -12,15 +12,17 @@
 
 /********************************* Inclusions *********************************/
 
-#include <assert.h>	/*	assert	*/
+#include <assert.h>	/*	assert				*/
+#include <time.h> /*	time_t, difftime	*/
 
 #include "bit_array.h"
 
 enum board
 { 
-NUM_OF_ROWS = 8,
-NUM_OF_COLUMNS = 8,
-BOARD_SIZE = NUM_OF_ROWS * NUM_OF_COLUMNS;
+	NUM_OF_ROWS = 8,
+	NUM_OF_COLUMNS = 8,
+	NUM_OF_DIRECTIONS = 8,
+	BOARD_SIZE = NUM_OF_ROWS * NUM_OF_COLUMNS
 };
 
 /**************************** Forward Declarations ****************************/
@@ -45,20 +47,35 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	/*	create a chess board of 8X8 as a bits array 			*/
 	bitsarr_ty board = 0;
 	
+	time_t start_time = time(&start_time);
+	
 	/*	asserts*/
 	assert(position > -1);
 	assert(path);
 	
-	return (TourImp(path, position, board, 1));
+	return (TourImp(path, position, board));
 }
 /******************************************************************************/
-int TourImp(unsigned char path[BOARD_SIZE], int pos, bitsarr_ty board, int step_num)
+enum
+{
+	2_MINUTES = 120
+};
+
+int TourImp(unsigned char path[BOARD_SIZE], int pos, bitsarr_ty board, time_t timer)
 {
 	size_t is_path_found = 1;
+	
 	int direction_to_go = -1;
+	
+	time_t curr_time = time(&curr_time);
 	
 	/*	asserts*/
 	assert(path);
+	
+	if (difftime(curr_time, timer) >= 2_MINUTES)
+	{
+		return (1);
+	}
 	
 	/* if each location at the board has been visited */
 	if (!BitArrayCountOff(board))
@@ -76,34 +93,33 @@ int TourImp(unsigned char path[BOARD_SIZE], int pos, bitsarr_ty board, int step_
 		return (1);
 	}
 
-	/*	increment step and tick curr position at the board*/
-	++step_num;
-	
+	/*	tick curr position at the board*/	
 	board = MarkPositionAsVisitedIMP(board, position);
 	
 	*path = pos;
 	
 	/*	recursively call 8 available positions 	*/
-	while (direction_to_go < 8)
+	while (direction_to_go < NUM_OF_DIRECTIONS)
 	{
-		TourImp(path + 1, NextPositionIMP(pos, direction_to_go), board, step_num);
+		TourImp(path + 1, NextPositionIMP(pos, direction_to_go), board, timer);
+		++direction_to_go;
 	}
 	
 	return (1);
 }
 /******************************************************************************/
 enum
-	{
-		/*clockwise*/
-		UP_LEFT = 0,
-		UP_RIGHT = 1,
-		RIGHT_UP = 2,
-		RIGHT_DOWN = 3,
-		DOWN_RIGHT = 4,
-		DOWN_LEFT = 5,
-		LEFT_DOWN = 6,
-		LEFT_UP = 7
-	};
+{
+	/*clockwise*/
+	UP_LEFT = 0,
+	UP_RIGHT = 1,
+	RIGHT_UP = 2,
+	RIGHT_DOWN = 3,
+	DOWN_RIGHT = 4,
+	DOWN_LEFT = 5,
+	LEFT_DOWN = 6,
+	LEFT_UP = 7
+};
 
 static int NextPositionIMP(int curr_position, int direction)
 {
@@ -113,7 +129,7 @@ static int NextPositionIMP(int curr_position, int direction)
 	
 	assert (0 <= direction & direction <= 7);
 	
-	new_position = curr_position + MovePosition[direction];
+	new_position = curr_position + MovePositionLUT[direction];
 	
 	return (IsPositionOutOfBoundsIMP(new_position) ? -1 : new_position);
 }

@@ -32,6 +32,8 @@ int Tour(int position, unsigned char path[64])
 /******************************************************************************/
 int TourImp(unsigned char path[64], int pos, unsigned long board, int step_num)
 {
+	size_t is_path_found = 1;
+	
 	/*	asserts*/
 	assert(path);
 	
@@ -59,10 +61,16 @@ int TourImp(unsigned char path[64], int pos, unsigned long board, int step_num)
 	board ^= (1 << pos);
 		
 	/*	recursively call 8 available positions 	*/
-	TourImp()
-	
+	is_path_found = (TourImp(path, RIGHT_UP(pos), board, step_num)
+	& TourImp(path, RIGHT(pos), board, step_num)
+	& TourImp(path, RIGHT_DOWN(pos), board, step_num)
+	& TourImp(path, DOWN(pos), board, step_num)
+	& TourImp(path, LEFT_DOWN(pos), board, step_num)
+	& TourImp(path, LEFT(pos), board, step_num)
+	& TourImp(path, LEFT_UP(pos), board, step_num;
+	& TourImp(path, UP(pos), board, step_num));
 	
 	/*	if path is not 0*/
-	return (path == 0);
+	return (is_path_found);
 	
 }

@@ -15,7 +15,7 @@
 #include <assert.h>	/*	assert				*/
 #include <time.h> /*	time_t, difftime	*/
 
-#include "bit_array.h"
+#include "../include/bit_array.h"
 
 enum board
 { 
@@ -26,6 +26,9 @@ enum board
 };
 
 /**************************** Forward Declarations ****************************/
+
+int TourImp(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
+																time_t timer);
 
 static void IndexToCartesianIMP(int index, int *x, int *y);
 
@@ -53,18 +56,17 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	assert(position > -1);
 	assert(path);
 	
-	return (TourImp(path, position, board));
+	return (TourImp(path, position, board, start_time));
 }
 /******************************************************************************/
 enum
 {
-	2_MINUTES = 120
+	TWO_MINUTES = 120
 };
 
-int TourImp(unsigned char path[BOARD_SIZE], int pos, bitsarr_ty board, time_t timer)
-{
-	size_t is_path_found = 1;
-	
+int TourImp(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
+																time_t timer)
+{	
 	int direction_to_go = -1;
 	
 	time_t curr_time = time(&curr_time);
@@ -72,7 +74,7 @@ int TourImp(unsigned char path[BOARD_SIZE], int pos, bitsarr_ty board, time_t ti
 	/*	asserts*/
 	assert(path);
 	
-	if (difftime(curr_time, timer) >= 2_MINUTES)
+	if (difftime(curr_time, timer) >= TWO_MINUTES)
 	{
 		return (1);
 	}
@@ -80,7 +82,7 @@ int TourImp(unsigned char path[BOARD_SIZE], int pos, bitsarr_ty board, time_t ti
 	/* if each location at the board has been visited */
 	if (!BitArrayCountOff(board))
 	{
-		*path = pos;
+		*path = position;
 		
 		return (0);
 	}
@@ -96,12 +98,12 @@ int TourImp(unsigned char path[BOARD_SIZE], int pos, bitsarr_ty board, time_t ti
 	/*	tick curr position at the board*/	
 	board = MarkPositionAsVisitedIMP(board, position);
 	
-	*path = pos;
+	*path = position;
 	
 	/*	recursively call 8 available positions 	*/
 	while (direction_to_go < NUM_OF_DIRECTIONS)
 	{
-		TourImp(path + 1, NextPositionIMP(pos, direction_to_go), board, timer);
+		TourImp(path + 1, NextPositionIMP(position, direction_to_go), board, timer);
 		++direction_to_go;
 	}
 	
@@ -125,9 +127,9 @@ static int NextPositionIMP(int curr_position, int direction)
 {
 	int new_position = -1;
 	
-	static const int MovePositionLUT[8] = {-17, -15, -6, 10, 17, 15, 6, -10}
+	static const int MovePositionLUT[8] = {-17, -15, -6, 10, 17, 15, 6, -10};
 	
-	assert (0 <= direction & direction <= 7);
+	assert (0 <= direction && direction <= 7);
 	
 	new_position = curr_position + MovePositionLUT[direction];
 	
@@ -142,7 +144,7 @@ static bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position)
 /******************************************************************************/
 static int IsPositionOutOfBoundsIMP(int position)
 {
-	return (position <= -1 ^ BOARD_SIZE <= position);
+	return (position > -1 && position < BOARD_SIZE);
 }
 /******************************************************************************/
 static int IsPositionBeenVisitedIMP(bitsarr_ty board, int position)

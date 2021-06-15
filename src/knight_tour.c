@@ -13,6 +13,7 @@
 /********************************* Inclusions *********************************/
 
 #include <assert.h>	/*	assert	*/
+#include <bit_array.h>
 
 enum board
 { 
@@ -27,11 +28,14 @@ static void IndexToCartesian(int index, int *x, int *y);
 
 static int CartesianToIndex(int *x, int *y);
 
+/* direction is 0-7, position is 0-63 /
+/ returns -1 if move in direction takes you out of the board */
+static int NextPositionIMP(int curr_position, int direction);
 /******************************************************************************/
 int Tour(int position, unsigned char path[BOARD_SIZE])
 {
-	/*	create board of 8X8 as an unsigned long (64 bits) 			*/
-	unsigned long board = 0;
+	/*	create a chess board of 8X8 as a bits array 			*/
+	bitsarr_ty board = 0;
 	
 	/*	create path array which will store the right path (if exists)	*/
 	/*	a '1' bit will indicate on a visited location on the board 		*/ 
@@ -44,26 +48,25 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	return (TourImp(path, position, board, 1));
 }
 /******************************************************************************/
-int TourImp(unsigned char path[BOARD_SIZE], int pos, unsigned long board, int step_num)
+int TourImp(unsigned char path[BOARD_SIZE], int pos, bitsarr_ty board, int step_num)
 {
 	size_t is_path_found = 1;
 	
 	/*	asserts*/
 	assert(path);
 	
-	/*	if this is the last step*/
-	/*		update path to be as board*/
-	/*		return 0*/
-	if (BOARD_SIZE == step_num)
+	/* if each location at the board has been visited */
+	if (!BitArrayCountOff(board))
 	{
-		board ^= (1 << pos);
 		*path = pos;
+		
 		return (0);
 	}
 	
 	/*	if this is step leads out of bounds or to a previously visited location */
 	/*		return 1*/
-	if (BOARD_SIZE <= pos || board & (1 << pos))
+	if (IsPositionOutOfBoundsIMP(position) ^ 
+										IsPositionVisitedIMP(board, position))
 	{
 		return (1);
 	}
@@ -88,6 +91,17 @@ int TourImp(unsigned char path[BOARD_SIZE], int pos, unsigned long board, int st
 	/*	if path is not 0*/
 	return (is_path_found);
 	
+}
+
+/******************************************************************************/
+static int IsPositionOutOfBounds(int position)
+{
+	return (position <= -1 ^ BOARD_SIZE <= position);
+}
+/******************************************************************************/
+static int IsPositionVisited(bitsarr_ty board, int position)
+{
+	return ((int)BitArrayGetVal(board, position));
 }
 /******************************************************************************/
 static void IndexToCartesian(int index, int *x, int *y)

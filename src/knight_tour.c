@@ -45,10 +45,6 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	/*	create a chess board of 8X8 as a bits array 			*/
 	bitsarr_ty board = 0;
 	
-	/*	create path array which will store the right path (if exists)	*/
-	/*	a '1' bit will indicate on a visited location on the board 		*/ 
-	unsigned char path[BOARD_SIZE] = {0};
-	
 	/*	asserts*/
 	assert(position > -1);
 	assert(path);
@@ -59,6 +55,7 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 int TourImp(unsigned char path[BOARD_SIZE], int pos, bitsarr_ty board, int step_num)
 {
 	size_t is_path_found = 1;
+	int direction_to_go = -1;
 	
 	/*	asserts*/
 	assert(path);
@@ -79,27 +76,23 @@ int TourImp(unsigned char path[BOARD_SIZE], int pos, bitsarr_ty board, int step_
 		return (1);
 	}
 
-
 	/*	increment step and tick curr position at the board*/
 	++step_num;
 	
 	board = MarkPositionAsVisitedIMP(board, position);
+	
 	*path = pos;
 	
 	/*	recursively call 8 available positions 	*/
-	NextPositionIMP
+	while (direction_to_go < 8)
+	{
+		TourImp(path + 1, NextPositionIMP(pos, direction_to_go), board, step_num);
+	}
 	
-	/*	if path is not 0*/
-	return (is_path_found);
-	
+	return (1);
 }
-
 /******************************************************************************/
-static int NextPositionIMP(int curr_position, int direction)
-{
-	int new_position = -1;
-	
-	enum directions
+enum
 	{
 		/*clockwise*/
 		UP_LEFT = 0,
@@ -111,8 +104,12 @@ static int NextPositionIMP(int curr_position, int direction)
 		LEFT_DOWN = 6,
 		LEFT_UP = 7
 	};
+
+static int NextPositionIMP(int curr_position, int direction)
+{
+	int new_position = -1;
 	
-	static const int MovePosition[8] = {-17, -15, -6, 10, 7, 17, 15, 6, -10}
+	static const int MovePositionLUT[8] = {-17, -15, -6, 10, 17, 15, 6, -10}
 	
 	assert (0 <= direction & direction <= 7);
 	
@@ -120,10 +117,10 @@ static int NextPositionIMP(int curr_position, int direction)
 	
 	return (IsPositionOutOfBoundsIMP(new_position) ? -1 : new_position);
 }
-
 /******************************************************************************/
 static bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position)
 {
+	/*	a '1' bit will indicate on a visited location on the board 		*/ 
 	return (BitArraySetOn(board, position));
 }
 /******************************************************************************/

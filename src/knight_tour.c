@@ -153,7 +153,7 @@ static bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position)
 /******************************************************************************/
 static int IsPositionOutOfBoundsIMP(int position)
 {
-	return (position > -1 && position < BOARD_SIZE);
+	return (position <= -1 || position >= BOARD_SIZE);
 }
 /******************************************************************************/
 static int IsPositionBeenVisitedIMP(bitsarr_ty board, int position)

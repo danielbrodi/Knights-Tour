@@ -31,8 +31,8 @@
 
 int main()
 {
-	int position = -1, i = 0;
-	unsigned char path[64] = {2};
+	int position = 0, i = 0;
+	unsigned char path[64] = {0};
 	
 	printf("Enter start position: ");
 	scanf("%d", &position);
@@ -45,6 +45,7 @@ int main()
 		{
 			break;
 		}
+		
 		printf("%d->", path[i]);
 		++i;
 	}

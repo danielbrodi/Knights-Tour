@@ -14,7 +14,13 @@
 
 #include <assert.h>	/*	assert	*/
 
-enum { NUM_OF_ROWS = 8, NUM_OF_COLUMNS = 8};
+enum board
+{ 
+NUM_OF_ROWS = 8,
+NUM_OF_COLUMNS = 8,
+BOARD_SIZE = NUM_OF_ROWS * NUM_OF_COLUMNS;
+};
+
 /**************************** Forward Declarations ****************************/
 
 static void IndexToCartesian(int index, int *x, int *y);
@@ -22,14 +28,14 @@ static void IndexToCartesian(int index, int *x, int *y);
 static int CartesianToIndex(int *x, int *y);
 
 /******************************************************************************/
-int Tour(int position, unsigned char path[64])
+int Tour(int position, unsigned char path[BOARD_SIZE])
 {
 	/*	create board of 8X8 as an unsigned long (64 bits) 			*/
 	unsigned long board = 0;
 	
 	/*	create path array which will store the right path (if exists)	*/
 	/*	a '1' bit will indicate on a visited location on the board 		*/ 
-	unsigned char path[64] = {0};
+	unsigned char path[BOARD_SIZE] = {0};
 	
 	/*	asserts*/
 	assert(position > -1);
@@ -38,7 +44,7 @@ int Tour(int position, unsigned char path[64])
 	return (TourImp(path, position, board, 1));
 }
 /******************************************************************************/
-int TourImp(unsigned char path[64], int pos, unsigned long board, int step_num)
+int TourImp(unsigned char path[BOARD_SIZE], int pos, unsigned long board, int step_num)
 {
 	size_t is_path_found = 1;
 	
@@ -48,16 +54,16 @@ int TourImp(unsigned char path[64], int pos, unsigned long board, int step_num)
 	/*	if this is the last step*/
 	/*		update path to be as board*/
 	/*		return 0*/
-	if (64 == step_num)
+	if (BOARD_SIZE == step_num)
 	{
 		board ^= (1 << pos);
-		path = board;
+		*path = pos;
 		return (0);
 	}
 	
 	/*	if this is step leads out of bounds or to a previously visited location */
 	/*		return 1*/
-	if (63 < pos || board & (1 << pos))
+	if (BOARD_SIZE <= pos || board & (1 << pos))
 	{
 		return (1);
 	}
@@ -67,9 +73,10 @@ int TourImp(unsigned char path[64], int pos, unsigned long board, int step_num)
 	++step_num;
 	
 	board ^= (1 << pos);
-		
+	*path = pos;
+	
 	/*	recursively call 8 available positions 	*/
-	is_path_found = (TourImp(path, RIGHT_UP(pos), board, step_num)
+	is_path_found = (TourImp(path + 1, RIGHT_UP(pos), board, step_num)
 	& TourImp(path, RIGHT(pos), board, step_num)
 	& TourImp(path, RIGHT_DOWN(pos), board, step_num)
 	& TourImp(path, DOWN(pos), board, step_num)

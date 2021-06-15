@@ -1,5 +1,5 @@
 /*********************************FILE__HEADER*********************************\
-* File:				knight_tour.c						 		  								
+* File:				knight_tour_test.c						 		  								
 * Author:			Daniel Brodsky					  								
 * Date:				14-06-2021
 * Code Reviewer:							   								
@@ -15,7 +15,7 @@
 #include <time.h>	/*	time						*/
 
 #include "utils.h"	/*	PRINT_COLOR, COLOR			*/
-#include ".h"
+#include "knight_tour.h"
 
 /***************************** Macros Definitions *****************************/
 
@@ -29,9 +29,26 @@
 /******************************************************************************/
 /******************************* Main__Function *******************************/
 
-int main
+int main()
 {
-
+	int position = -1, i = 0;
+	unsigned char path[64] = {2};
+	
+	printf("Enter start position: ");
+	scanf("%d", &position);
+	
+	Tour(position, path);
+	
+	while (i < 64)
+	{
+		if (path[i] == path[i + i])
+		{
+			break;
+		}
+		printf("%d->", path[i]);
+		++i;
+	}
+	
 	return (0);
 }
 

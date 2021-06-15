@@ -10,4 +10,6 @@
 
 #include <stddef.h>		/*	size_t	*/
 
+int Tour(int position, unsigned char path[64]);
+
 #endif	/* __knight_tour_H__	*/

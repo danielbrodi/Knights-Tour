@@ -13,9 +13,11 @@
 /********************************* Inclusions *********************************/
 
 #include <assert.h>	/*	assert				*/
+#include <stddef.h>	/*	size_t, NULL	*/
 #include <time.h> /*	time_t, difftime	*/
 
-#include "../include/bit_array.h"
+#include "bit_array.h"
+#include "knight_tour.h"
 
 enum board
 { 
@@ -27,7 +29,7 @@ enum board
 
 /**************************** Forward Declarations ****************************/
 
-int TourImp(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
+int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 																time_t timer);
 
 static void IndexToCartesianIMP(int index, int *x, int *y);
@@ -36,7 +38,7 @@ static int CartesianToIndexIMP(int *x, int *y);
 
 /* direction is 0-7, position is 0-63 /
 / returns -1 if move in direction takes you out of the board */
-static int NextPositionIMP(int curr_position, int direction);
+static int GetNextPositionIMP(int curr_position, int direction);
 
 static int IsPositionOutOfBoundsIMP(int position);
 
@@ -56,7 +58,7 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	assert(position > -1);
 	assert(path);
 	
-	return (TourImp(path, position, board, start_time));
+	return (TourIMP(path, position, board, start_time));
 }
 /******************************************************************************/
 enum
@@ -64,10 +66,10 @@ enum
 	TWO_MINUTES = 120
 };
 
-int TourImp(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
+int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 																time_t timer)
 {	
-	int direction_to_go = -1;
+	int direction_to_go = 0;
 	
 	time_t curr_time = time(&curr_time);
 	
@@ -98,14 +100,21 @@ int TourImp(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 	/*	tick curr position at the board*/	
 	board = MarkPositionAsVisitedIMP(board, position);
 	
-	*path = position;
-	
 	/*	recursively call 8 available positions 	*/
-	while (direction_to_go < NUM_OF_DIRECTIONS)
-	{
-		TourImp(path + 1, NextPositionIMP(position, direction_to_go), board, timer);
-		++direction_to_go;
-	}
+	for (direction_to_go = 0; direction_to_go < NUM_OF_DIRECTIONS;
+															 ++direction_to_go)
+    {
+        /* if TourIMP(path+1,...) in direction succeeds*/
+        if (!TourIMP(path + 1, GetNextPositionIMP(position, direction_to_go),
+         														board, timer))
+        {
+            /*break*/
+            /*add pos to path*/
+            *path = position;
+            
+            return (0);
+        }
+    }
 	
 	return (1);
 }
@@ -123,7 +132,7 @@ enum
 	LEFT_UP = 7
 };
 
-static int NextPositionIMP(int curr_position, int direction)
+static int GetNextPositionIMP(int curr_position, int direction)
 {
 	int new_position = -1;
 	
@@ -166,3 +175,4 @@ static int CartesianToIndexIMP(int *x, int *y)
 	
 	return ((*x * NUM_OF_ROWS) + *y);
 }
+/******************************************************************************/

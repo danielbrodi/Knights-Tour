@@ -41,11 +41,6 @@ int main()
 	
 	while (i < 64)
 	{
-		if (path[i] == path[i + i])
-		{
-			break;
-		}
-		
 		printf("%d->", path[i]);
 		++i;
 	}

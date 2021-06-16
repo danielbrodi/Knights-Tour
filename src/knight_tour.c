@@ -34,13 +34,13 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 
 static void IndexToCartesianIMP(int index, int *x, int *y);
 
-static int CartesianToIndexIMP(int *x, int *y);
+static int CartesianToIndexIMP(int x, int y);
 
 /* direction is 0-7, position is 0-63 /
 / returns -1 if move in direction takes you out of the board */
 static int GetNextPositionIMP(int curr_position, int direction);
 
-static int IsPositionOutOfBoundsIMP(int position);
+static int IsPositionOutOfBoundsIMP(int x_coordinate, int y_coordinate);
 
 static int IsPositionBeenVisitedIMP(bitsarr_ty board, int position);
 
@@ -63,43 +63,45 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 /******************************************************************************/
 enum
 {
-	TWO_MINUTES = 120
+	TWO_MINUTES = 1
 };
 
 int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 																time_t timer)
 {	
 	int direction_to_go = 0;
+	int position_x_coordinate = 0, position_y_coordinate = 0;
 	
 	time_t curr_time = time(&curr_time);
 	
+	IndexToCartesianIMP(position, &position_x_coordinate, &position_y_coordinate);
+	
 	/*	asserts*/
 	assert(path);
-	
-	if (difftime(curr_time, timer) >= TWO_MINUTES)
-	{
-		return (1);
-	}
-	
-	/* if each location at the board has been visited */
-	if (!BitArrayCountOff(board))
-	{
-		*path = position;
-		
-		return (0);
-	}
+
+/*	if (difftime(curr_time, timer) >= TWO_MINUTES)*/
+/*	{*/
+/*		return (1);*/
+/*	}*/
 	
 	/*	if this is step leads out of bounds or to a previously visited location */
 	/*		return 1*/
-	if (IsPositionOutOfBoundsIMP(position) ^ 
-									IsPositionBeenVisitedIMP(board, position))
+	if (IsPositionOutOfBoundsIMP(position_x_coordinate, position_y_coordinate) 
+								|| IsPositionBeenVisitedIMP(board, position))
 	{
 		return (1);
+	}
+	
+		
+	/* if each location at the board has been visited */
+	if (!BitArrayCountOff(board))
+	{
+		return (0);
 	}
 
 	/*	tick curr position at the board*/	
 	board = MarkPositionAsVisitedIMP(board, position);
-	
+
 	/*	recursively call 8 available positions 	*/
 	for (direction_to_go = 0; direction_to_go < NUM_OF_DIRECTIONS;
 															 ++direction_to_go)
@@ -134,15 +136,21 @@ enum
 
 static int GetNextPositionIMP(int curr_position, int direction)
 {
-	int new_position = -1;
+	int new_position_x = 0, new_position_y = 0;
+	int curr_position_x = 0, curr_position_y = 0;
 	
-	static const int MovePositionLUT[8] = {-17, -15, -6, 10, 17, 15, 6, -10};
+	static const int MoveRowLUT[8] = {-2, -2, -1, 1, 2, 2, 1, -1};
+	static const int MoveColLUT[8] = {-1, 1, 2, 2, 1, -1, -2, -2};
 	
 	assert (0 <= direction && direction <= 7);
 	
-	new_position = curr_position + MovePositionLUT[direction];
+	IndexToCartesianIMP(curr_position, &curr_position_x, &curr_position_y);
+
+	new_position_x = curr_position_x + MoveColLUT[direction];
+	new_position_y = curr_position_y + MoveRowLUT[direction];
 	
-	return (IsPositionOutOfBoundsIMP(new_position) ? -1 : new_position);
+	return (IsPositionOutOfBoundsIMP(new_position_x, new_position_y) ? -1 :
+							CartesianToIndexIMP(new_position_x, new_position_y));
 }
 /******************************************************************************/
 static bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position)
@@ -151,9 +159,10 @@ static bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position)
 	return (BitArraySetOn(board, position));
 }
 /******************************************************************************/
-static int IsPositionOutOfBoundsIMP(int position)
-{
-	return (position <= -1 || position >= BOARD_SIZE);
+static int IsPositionOutOfBoundsIMP(int x_coordinate, int y_coordinate)
+{							
+	return (!(x_coordinate < NUM_OF_COLUMNS && x_coordinate > -1 &&
+							y_coordinate < NUM_OF_ROWS && y_coordinate > -1));
 }
 /******************************************************************************/
 static int IsPositionBeenVisitedIMP(bitsarr_ty board, int position)
@@ -165,14 +174,12 @@ static void IndexToCartesianIMP(int index, int *x, int *y)
 {
 	assert(x && y);
 	
-	*x = index / NUM_OF_ROWS;
-	*y = index % NUM_OF_COLUMNS;
+	*x = index % NUM_OF_COLUMNS;
+	*y = index / NUM_OF_ROWS;
 }
 /******************************************************************************/
-static int CartesianToIndexIMP(int *x, int *y)
+static int CartesianToIndexIMP(int x, int y)
 {
-	assert(x && y);
-	
-	return ((*x * NUM_OF_ROWS) + *y);
+	return ((y * NUM_OF_ROWS) + x);
 }
 /******************************************************************************/

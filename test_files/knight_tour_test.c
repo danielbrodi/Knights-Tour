@@ -41,6 +41,11 @@ int main()
 	
 	while (i < 64)
 	{
+		if (path[i] == path[i + 1])
+		{
+			printf("Moves done: %d\n", i);
+			break;
+		}
 		printf("%d->", path[i]);
 		++i;
 	}

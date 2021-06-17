@@ -17,6 +17,7 @@
 #include <time.h> /*	time_t, difftime	*/
 
 #include "knight_tour.h"
+#include "bit_array.h"
 
 enum board
 { 
@@ -80,20 +81,18 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, unsigned long board,
 	/*	asserts*/
 	assert(path);
 	
-	if (difftime(curr_time, timer) >= TWO_MINUTES)
-	{
-		return (1);
-	}
+/*	if (difftime(curr_time, timer) >= TWO_MINUTES)*/
+/*	{*/
+/*		return (1);*/
+/*	}*/
 	
 		/* if each location at the board has been visited */
-	if (((int)board) == -1)
+	if (BitArrayCountOnLUT(board) == 64)
 	{
 		return (0);
 	}
 		
-	/*	if this is step leads out of bounds or to a previously visited location */
-	/*		return 1*/
-	if (IsPositionOutOfBoundsIMP(position_x_coordinate, position_y_coordinate) 
+	if (IsPositionOutOfBoundsIMP(position_x_coordinate, position_y_coordinate)
 								|| IsPositionBeenVisitedIMP(board, position))
 	{
 		return (1);
@@ -122,36 +121,26 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, unsigned long board,
 	return (1);
 }
 /******************************************************************************/
-enum
-{
-	/*clockwise*/
-	UP_LEFT = 0,
-	UP_RIGHT = 1,
-	RIGHT_UP = 2,
-	RIGHT_DOWN = 3,
-	DOWN_RIGHT = 4,
-	DOWN_LEFT = 5,
-	LEFT_DOWN = 6,
-	LEFT_UP = 7
-};
-
 static int GetNextPositionIMP(int curr_position, int direction)
 {
+	/* LUTs which indicate on the change that made by each direction	*/
+	static const int MoveRowLUT[8] = {1, 2, 2, 1, -1, -2, -2, -1};
+	static const int MoveColLUT[8] = {2, 1, -1, -2, -2, -1, 1, 2};
+	
 	int new_position_x = 0, new_position_y = 0;
 	int curr_position_x = 0, curr_position_y = 0;
-	
-	static const int MoveRowLUT[8] = {-2, -2, -1, 1, 2, 2, 1, -1};
-	static const int MoveColLUT[8] = {-1, 1, 2, 2, 1, -1, -2, -2};
 	
 	assert (0 <= direction && direction <= 7);
 	
 	IndexToCartesianIMP(curr_position, &curr_position_x, &curr_position_y);
-
+	
+	/*	update position as the rule of the direction says */
 	new_position_x = curr_position_x + MoveColLUT[direction];
 	new_position_y = curr_position_y + MoveRowLUT[direction];
 	
+	/*	check if the new position is out of bounds and if not, return it */
 	return (IsPositionOutOfBoundsIMP(new_position_x, new_position_y) ? -1 :
-							CartesianToIndexIMP(new_position_x, new_position_y));
+						CartesianToIndexIMP(new_position_x, new_position_y));
 }
 /******************************************************************************/
 static unsigned long MarkPositionAsVisitedIMP(unsigned long board, int position)
@@ -166,12 +155,9 @@ static unsigned long MarkPositionAsVisitedIMP(unsigned long board, int position)
 	return (updated_board);
 }
 /******************************************************************************/
-static int IsPositionOutOfBoundsIMP(int x_coordinate, int y_coordinate)
+static int IsPositionOutOfBoundsIMP(int x, int y)
 {							
-		return (!(	x_coordinate < NUM_OF_COLUMNS &&
-			 		x_coordinate > -1 &&
-					y_coordinate < NUM_OF_ROWS &&
-					y_coordinate > -1));
+	return (((0 > x || 7 < x || 0 > y || 7 < y)));
 }
 /******************************************************************************/
 static int IsPositionBeenVisitedIMP(unsigned long board, int position)

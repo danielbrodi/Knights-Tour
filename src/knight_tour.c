@@ -2,9 +2,8 @@
 * File:				knight_tour.c
 * Author:			Daniel Brodsky				 		  												  								
 * Date:				14-06-2021
-* Code Reviewer:	
-* Pseudo Reviewer: 						   								
-* Version:			1.0   								
+* Code Reviewer:						   								
+* Version:			1.5   								
 * Description:		Find out if it's possible for a knight at a given position
 					to fully go through a chess board without stepping at a
 					location more than one time.
@@ -12,13 +11,16 @@
 
 /********************************* Inclusions *********************************/
 
-#include <assert.h>	/*	assert				*/
-#include <stddef.h>	/*	size_t, NULL	*/
-#include <time.h> /*	time_t, difftime	*/
+#include <assert.h>		/*	assert					*/
+#include <stddef.h>		/*	size_t, NULL			*/
+#include <stdlib.h>		/*	exit					*/
+#include <stdio.h>		/*	puts					*/
+#include <time.h> 		/*	time_t, difftime		*/
 
+#include "bit_array.h"	/* bits array operations	*/
 #include "knight_tour.h"
-#include "bit_array.h"
 
+/* properties of the played chess board		*/
 enum board
 { 
 	NUM_OF_ROWS = 8,
@@ -29,30 +31,30 @@ enum board
 
 /**************************** Forward Declarations ****************************/
 
-int TourIMP(unsigned char path[BOARD_SIZE], int position, unsigned long board,
+static int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 																time_t timer);
+																
+/*	direction is 0-7, position is 0-63	*/
+/*	returns -1 if move in direction takes you out of the board	*/
+static int GetNextPositionIMP(int current_position, int direction);
 
-static void IndexToCartesianIMP(int index, int *x, int *y);
+static void IndexToCartesianIMP(int index, int *x_coordinate, int *y_coordinate);
 
-static int CartesianToIndexIMP(int x, int y);
-
-/* direction is 0-7, position is 0-63 /
-/ returns -1 if move in direction takes you out of the board */
-static int GetNextPositionIMP(int curr_position, int direction);
+static int CartesianToIndexIMP(int x_coordinate, int y_coordinate);
 
 static int IsPositionOutOfBoundsIMP(int x_coordinate, int y_coordinate);
 
-static int IsPositionBeenVisitedIMP(unsigned long board, int position);
 
-static unsigned long MarkPositionAsVisitedIMP(unsigned long board, int position);
+static int HasPositionBeenVisitedBeforeIMP(bitsarr_ty board, int position);
 
-unsigned int CountONBitsIMP(unsigned long board);
+static bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position);
 
 /******************************************************************************/
 int Tour(int position, unsigned char path[BOARD_SIZE])
 {
-	/*	create a chess board of 8X8 as a bits array 			*/
-	unsigned long board = 0;
+	/*	create a chess board of 8X8 as a type of `bitsarr_ty` which
+	 *	is a type of 64 bits 			*/
+	bitsarr_ty board = 0;
 	
 	time_t start_time = time(&start_time);
 	
@@ -68,7 +70,7 @@ enum
 	TWO_MINUTES = 120
 };
 
-int TourIMP(unsigned char path[BOARD_SIZE], int position, unsigned long board,
+int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 																time_t timer)
 {	
 	int direction_to_go = 0;
@@ -81,19 +83,25 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, unsigned long board,
 	/*	asserts*/
 	assert(path);
 	
-/*	if (difftime(curr_time, timer) >= TWO_MINUTES)*/
-/*	{*/
-/*		return (1);*/
-/*	}*/
+	/* timout of 2 minutes - if no solution has been found - exit the program */
+	if (difftime(curr_time, timer) >= TWO_MINUTES)
+	{
+		puts("Couldn't find a path in the given time.\nPlease try an other "
+				"starting position.\n");
+		exit(1);
+	}
 	
-		/* if each location at the board has been visited */
-	if (BitArrayCountOnLUT(board) == 64)
+	/* if each location at the board has been visited */
+	if (BitArrayCountOnLUT(board) == BOARD_SIZE)
 	{
 		return (0);
 	}
-		
+	
+	/*	verify the position is valid: */
+		/*	-	is not out of the bounds of the board	*/
+		/*	-	has not been visited before				*/	
 	if (IsPositionOutOfBoundsIMP(position_x_coordinate, position_y_coordinate)
-								|| IsPositionBeenVisitedIMP(board, position))
+							|| HasPositionBeenVisitedBeforeIMP(board, position))
 	{
 		return (1);
 	}
@@ -110,8 +118,7 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, unsigned long board,
         if (!TourIMP(path + 1, GetNextPositionIMP(position, direction_to_go),
          														board, timer))
         {
-            /*break*/
-            /*add pos to path*/
+            /* save the last position in path array before exiting	*/
             *path = position;
             
             return (0);
@@ -139,62 +146,43 @@ static int GetNextPositionIMP(int curr_position, int direction)
 	new_position_y = curr_position_y + MoveRowLUT[direction];
 	
 	/*	check if the new position is out of bounds and if not, return it */
-	return (IsPositionOutOfBoundsIMP(new_position_x, new_position_y) ? -1 :
+	return (IsPositionOutOfBoundsIMP(new_position_x, new_position_y) ? (-1) :
 						CartesianToIndexIMP(new_position_x, new_position_y));
 }
 /******************************************************************************/
-static unsigned long MarkPositionAsVisitedIMP(unsigned long board, int position)
-{
-	unsigned long updated_board = board;
-	
+bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position)
+{	
 	assert(position >= 0);
 	
 	/*	a '1' bit will indicate on a visited location on the board 		*/ 
-	updated_board |= (1UL << position);
-	
-	return (updated_board);
+	return (BitArraySetOn(board, position));
 }
 /******************************************************************************/
-static int IsPositionOutOfBoundsIMP(int x, int y)
+int IsPositionOutOfBoundsIMP(int x_coordinate, int y_coordinate)
 {							
-	return (((0 > x || 7 < x || 0 > y || 7 < y)));
+	return (((0 > x_coordinate || 7 < x_coordinate || 0 > y_coordinate
+														|| 7 < y_coordinate)));
 }
 /******************************************************************************/
-static int IsPositionBeenVisitedIMP(unsigned long board, int position)
+int HasPositionBeenVisitedBeforeIMP(bitsarr_ty board, int position)
 {
-	return (!!(board & (1UL << position)));
-}
-/******************************************************************************/
-static void IndexToCartesianIMP(int index, int *x, int *y)
-{
-	assert(x && y);
+	assert(position >= 0);
 	
-	*x = index % NUM_OF_COLUMNS;
-	*y = index / NUM_OF_ROWS;
+	return (BitArrayGetVal(board, position));
 }
 /******************************************************************************/
-static int CartesianToIndexIMP(int x, int y)
+void IndexToCartesianIMP(int index, int *x_coordinate, int *y_coordinate)
 {
-	return ((y * NUM_OF_ROWS) + x);
-}
-/******************************************************************************/
-unsigned int CountONBitsIMP(unsigned long board)
-{
-	size_t curr_bit_index = 0;
-	size_t set_bits_counter = 0; 
+	assert(x_coordinate && y_coordinate);
 	
-	for (curr_bit_index = 0; curr_bit_index < BOARD_SIZE; ++curr_bit_index) 
-	{ 
-		set_bits_counter += !!(board & (1UL << curr_bit_index));
-		
-		board &= ~(1UL << curr_bit_index);
-		
-		if (0 == board)
-		{
-			break;
-		}
-	} 
-	 
-	return (set_bits_counter); 
+	*x_coordinate = index % NUM_OF_COLUMNS;
+	*y_coordinate = index / NUM_OF_ROWS;
+}
+/******************************************************************************/
+int CartesianToIndexIMP(int x_coordinate, int y_coordinate)
+{
+	assert(x_coordinate >= 0 && y_coordinate >= 0);
+	
+	return ((y_coordinate * NUM_OF_ROWS) + x_coordinate);
 }
 /******************************************************************************/

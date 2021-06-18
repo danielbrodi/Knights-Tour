@@ -4,9 +4,8 @@
 * Date:				14-06-2021
 * Code Reviewer:						   								
 * Version:			1.5   								
-* Description:		Find out if it's possible for a knight at a given position
-					to fully go through a chess board without stepping at a
-					location more than once.
+* Description:		Implementation of a basic and heuristic solutions for
+					The Knight’s Tour problem, using a bit array.
 \******************************************************************************/
 
 /********************************* Inclusions *********************************/
@@ -31,12 +30,28 @@ enum board
 	BOARD_SIZE = NUM_OF_ROWS * NUM_OF_COLUMNS
 };
 
+typedef enum possibilities_lut_status
+{
+	NOT_INITIALIZED,
+	INITIALIZED
+} possibilities_lut_status_ty;
+
+static int possible_moves_lut[64][] = {0};
+static possibilities_lut_status possible_moves_lut_status = NOT_INITIALIZED;
 /**************************** Forward Declarations ****************************/
+
 
 /*	recursively runs through all the options to cover the whole board 	*/
 static int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 																time_t timer);
 																
+static void InitPossibleMovesLutIMP();
+
+/*	the huristic solution to find a path in the fastest way based on
+ *	moving each time to the location with the minimum 
+ *	number of unvisited adjacent										*/															
+static int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
+												bitsarr_ty board, time_t timer);													
 /*	direction is 0-7, position is 0-63.
  *	Returns -1 if move in direction takes you out of the board			*/
 static int GetNextPositionIMP(int current_position, int direction);
@@ -57,7 +72,7 @@ static int HasPositionBeenVisitedBeforeIMP(bitsarr_ty board, int position);
 /*	marks a given position on the board as visited						*/
 static bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position);
 
-/******************************************************************************/
+/************************* Functions  Implementations *************************/
 int Tour(int position, unsigned char path[BOARD_SIZE])
 {
 	/*	create a chess board of 8X8 as a type of `bitsarr_ty` which
@@ -70,7 +85,8 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	assert(position > -1);
 	assert(path);
 	
-	return (TourIMP(path, position, board, start_time));
+/*	return (TourIMP(path, position, board, start_time));*/
+	return (HeuristicTourIMP(path, position, board, start_time));
 }
 /******************************************************************************/
 enum
@@ -82,6 +98,7 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 																time_t timer)
 {	
 	int direction_to_go = 0;
+	
 	int position_x_coordinate = 0, position_y_coordinate = 0;
 	
 	time_t curr_time = time(&curr_time);
@@ -94,7 +111,8 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 	/* timout of 2 minutes - if no solution has been found - exit the program */
 	if (difftime(curr_time, timer) >= TWO_MINUTES)
 	{
-		exit(2);
+		puts("Timeout Error: no solution has been found.");
+		exit(1);
 	}
 	
 	/* if each location at the board has been visited */
@@ -190,5 +208,75 @@ int CartesianToIndexIMP(int x_coordinate, int y_coordinate)
 	assert(x_coordinate >= 0 && y_coordinate >= 0);
 	
 	return ((y_coordinate * NUM_OF_ROWS) + x_coordinate);
+}
+/******************************************************************************/
+void InitPossibleMovesLutIMP()
+{
+	int curr_position = 0, direction = 0, possible_position = 0;
+	
+	for (position = 0; curr_position < BOARD_SIZE; ++curr_position)
+	{
+		for (direction = 0; direction < NUM_OF_DIRECTIONS; ++direction)
+		{
+			 possible_position = GetNextPositionIMP(curr_position, direction);
+			 
+			 if (!IsPositionOutOfBoundsIMP(possible_position))
+			 {
+			 	possible_moves_lut[curr_position][direction] = possible_position;
+			 }
+		}
+	}
+}
+/******************************************************************************/
+int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
+												bitsarr_ty board, time_t timer)
+{
+
+	if (NOT_INITIALIZED == possible_moves_lut_status)
+	{
+		InitPossibleMovesLutIMP();
+		possible_moves_lut_status = INITIALIZED;
+	}
+	
+	int direction_to_go = 0;
+	
+	int position_x_coordinate = 0, position_y_coordinate = 0;
+	
+	time_t curr_time = time(&curr_time);
+	
+	IndexToCartesianIMP(position, &position_x_coordinate, &position_y_coordinate);
+	
+	/*	asserts*/
+	assert(path);
+	
+	/* timout of 2 minutes - if no solution has been found - exit the program */
+	if (difftime(curr_time, timer) >= TWO_MINUTES)
+	{
+		puts("Timeout Error: no solution has been found.");
+		exit(1);
+	}
+	
+	/* if each location at the board has been visited */
+	if (BitArrayCountOnLUT(board) == BOARD_SIZE)
+	{
+		return (0);
+	}
+	
+	/*	verify the position is valid: */
+		/*	-	is not out of the bounds of the board	*/
+		/*	-	has not been visited before				*/	
+	if (IsPositionOutOfBoundsIMP(position_x_coordinate, position_y_coordinate)
+							|| HasPositionBeenVisitedBeforeIMP(board, position))
+	{
+		return (1);
+	}
+	
+
+	/*	tick curr position at the board*/	
+	board = MarkPositionAsVisitedIMP(board, position);
+	
+	
+
+	
 }
 /******************************************************************************/

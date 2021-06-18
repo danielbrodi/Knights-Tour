@@ -36,7 +36,7 @@ static int CompareFunc(const void *elem1, const void *elem2);
 
 int main()
 {
-	status_ty status = SUCCESS;
+	status_ty status = FAILURE;
 	int starting_square = 0;
 	unsigned char path[64] = {0};
 	unsigned char sorted_path[64] = {0};
@@ -52,6 +52,7 @@ int main()
 		ArrayCopyAndSort(sorted_path, path);
 		STATUS_TEST_3PARAM(memcmp, sorted_path, test_path, 64, 0, "Path")
 		PrintPath(path);
+		status = SUCCESS;
 	}
 	
 	PRINT_SUCCESS(status)

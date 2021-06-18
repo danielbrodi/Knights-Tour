@@ -36,7 +36,7 @@ typedef enum possibilities_lut_status
 	INITIALIZED
 } possibilities_lut_status_ty;
 
-static int possible_moves_lut[64][] = {0};
+static int possible_moves_lut[64] = {0};
 static possibilities_lut_status possible_moves_lut_status = NOT_INITIALIZED;
 /**************************** Forward Declarations ****************************/
 
@@ -55,6 +55,8 @@ static int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
 /*	direction is 0-7, position is 0-63.
  *	Returns -1 if move in direction takes you out of the board			*/
 static int GetNextPositionIMP(int current_position, int direction);
+
+static int GetPosWithMinSteps(int position);
 
 /*	converts a given index to x and y coordinates of 0-7 each one 		*/
 static void IndexToCartesianIMP(int index, int *x_coordinate, int *y_coordinate);
@@ -222,7 +224,7 @@ void InitPossibleMovesLutIMP()
 			 
 			 if (!IsPositionOutOfBoundsIMP(possible_position))
 			 {
-			 	possible_moves_lut[curr_position][direction] = possible_position;
+			 	possible_moves_lut[curr_position] += 1;
 			 }
 		}
 	}
@@ -241,6 +243,8 @@ int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
 	int direction_to_go = 0;
 	
 	int position_x_coordinate = 0, position_y_coordinate = 0;
+	
+	int position_with_min_steps = -1;
 	
 	time_t curr_time = time(&curr_time);
 	
@@ -273,10 +277,30 @@ int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
 	
 
 	/*	tick curr position at the board*/	
-	board = MarkPositionAsVisitedIMP(board, position);
+	board = MarkPositionAsVisitedIMP(board, position); 
 	
+	HeuristicTourIMP(path + 1, GetPosWithMinSteps(position, board), board, timer);
 	
-
+	return (1);
+}
+/******************************************************************************/
+int GetPosWithMinStepsIMP(int position)
+{
+	int pos_with_min_steps = -1, direction = 0, possible_position = 0;
 	
+	while (pos_with_min_steps == -1)
+	{
+		pos_with_min_steps = GetNextPositionIMP(position, direction);
+		++direction;
+	}
+	
+	for (direction = 0; direction < NUM_OF_DIRECTIONS; ++direction)
+	{
+		possible_position
+		if (GetNextPositionIMP(position, direction) < possible_moves_lut[pos_with_min_steps])
+		{
+			
+		}
+	}
 }
 /******************************************************************************/

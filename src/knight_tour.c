@@ -6,7 +6,7 @@
 * Version:			1.5   								
 * Description:		Find out if it's possible for a knight at a given position
 					to fully go through a chess board without stepping at a
-					location more than one time.
+					location more than once.
 \******************************************************************************/
 
 /********************************* Inclusions *********************************/
@@ -20,6 +20,8 @@
 #include "bit_array.h"	/* bits array operations	*/
 #include "knight_tour.h"
 
+/******************************* macros & enums *******************************/
+
 /* properties of the played chess board		*/
 enum board
 { 
@@ -31,22 +33,28 @@ enum board
 
 /**************************** Forward Declarations ****************************/
 
+/*	recursively runs through all the options to cover the whole board 	*/
 static int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 																time_t timer);
 																
-/*	direction is 0-7, position is 0-63	*/
-/*	returns -1 if move in direction takes you out of the board	*/
+/*	direction is 0-7, position is 0-63.
+ *	Returns -1 if move in direction takes you out of the board			*/
 static int GetNextPositionIMP(int current_position, int direction);
 
+/*	converts a given index to x and y coordinates of 0-7 each one 		*/
 static void IndexToCartesianIMP(int index, int *x_coordinate, int *y_coordinate);
 
+/*	converts x and y coordinates into an index of 0-63					*/
 static int CartesianToIndexIMP(int x_coordinate, int y_coordinate);
 
+/*	checks if a given position is out of bounds of the board.
+ *	returns 1 if the given position is out of the board, 0 otherwise.	*/
 static int IsPositionOutOfBoundsIMP(int x_coordinate, int y_coordinate);
 
-
+/*	checks if a given position has been marked as visited 				*/
 static int HasPositionBeenVisitedBeforeIMP(bitsarr_ty board, int position);
 
+/*	marks a given position on the board as visited						*/
 static bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position);
 
 /******************************************************************************/
@@ -86,9 +94,7 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 	/* timout of 2 minutes - if no solution has been found - exit the program */
 	if (difftime(curr_time, timer) >= TWO_MINUTES)
 	{
-		puts("Couldn't find a path in the given time.\nPlease try an other "
-				"starting position.\n");
-		exit(1);
+		exit(2);
 	}
 	
 	/* if each location at the board has been visited */
@@ -160,8 +166,8 @@ bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position)
 /******************************************************************************/
 int IsPositionOutOfBoundsIMP(int x_coordinate, int y_coordinate)
 {							
-	return (((0 > x_coordinate || 7 < x_coordinate || 0 > y_coordinate
-														|| 7 < y_coordinate)));
+	return (x_coordinate >= NUM_OF_COLUMNS || y_coordinate >= NUM_OF_ROWS ||
+			x_coordinate < 0 || y_coordinate < 0);
 }
 /******************************************************************************/
 int HasPositionBeenVisitedBeforeIMP(bitsarr_ty board, int position)

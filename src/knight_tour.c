@@ -36,8 +36,13 @@ typedef enum possibilities_lut_status
 	INITIALIZED
 } possibilities_lut_status_ty;
 
+enum
+{
+	TWO_MINUTES = 120
+};
+
 static int possible_moves_lut[64] = {0};
-static possibilities_lut_status possible_moves_lut_status = NOT_INITIALIZED;
+static possibilities_lut_status_ty possible_moves_lut_status = NOT_INITIALIZED;
 /**************************** Forward Declarations ****************************/
 
 
@@ -50,13 +55,13 @@ static void InitPossibleMovesLutIMP();
 /*	the huristic solution to find a path in the fastest way based on
  *	moving each time to the location with the minimum 
  *	number of unvisited adjacent										*/															
-static int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
-												bitsarr_ty board, time_t timer);													
+static int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position, int previous_position,
+												bitsarr_ty board, time_t timer);											
 /*	direction is 0-7, position is 0-63.
  *	Returns -1 if move in direction takes you out of the board			*/
 static int GetNextPositionIMP(int current_position, int direction);
 
-static int GetPosWithMinSteps(int position);
+static int GetPosWithMinStepsIMP(int position, int previous_position);
 
 /*	converts a given index to x and y coordinates of 0-7 each one 		*/
 static void IndexToCartesianIMP(int index, int *x_coordinate, int *y_coordinate);
@@ -88,14 +93,9 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	assert(path);
 	
 /*	return (TourIMP(path, position, board, start_time));*/
-	return (HeuristicTourIMP(path, position, board, start_time));
+	return (HeuristicTourIMP(path, position, -1, board, start_time));
 }
 /******************************************************************************/
-enum
-{
-	TWO_MINUTES = 120
-};
-
 int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 																time_t timer)
 {	
@@ -144,7 +144,7 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
         if (!TourIMP(path + 1, GetNextPositionIMP(position, direction_to_go),
          														board, timer))
         {
-            /* save the last position in path array before exiting	*/
+            /* save the position that's correct in path array before exiting*/
             *path = position;
             
             return (0);
@@ -216,42 +216,42 @@ void InitPossibleMovesLutIMP()
 {
 	int curr_position = 0, direction = 0, possible_position = 0;
 	
-	for (position = 0; curr_position < BOARD_SIZE; ++curr_position)
+	for (curr_position = 0; curr_position < BOARD_SIZE; ++curr_position)
 	{
 		for (direction = 0; direction < NUM_OF_DIRECTIONS; ++direction)
 		{
 			 possible_position = GetNextPositionIMP(curr_position, direction);
 			 
-			 if (!IsPositionOutOfBoundsIMP(possible_position))
+			 if (-1 != possible_position)
 			 {
 			 	possible_moves_lut[curr_position] += 1;
 			 }
 		}
 	}
+	
+/*	for (curr_position = 0; curr_position < BOARD_SIZE; ++curr_position)*/
+/*	{*/
+/*		printf("Position: %d -> Number of possibilities: %d\n", curr_position, possible_moves_lut[curr_position]);*/
+/*	}*/
 }
 /******************************************************************************/
-int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
+int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position, int previous_position,
 												bitsarr_ty board, time_t timer)
-{
-
+{	
+	int position_x_coordinate = 0, position_y_coordinate = 0;
+	
+	time_t curr_time = time(&curr_time);
+	
+	/*	asserts*/
+	assert(path);
+	
+	IndexToCartesianIMP(position, &position_x_coordinate, &position_y_coordinate);
+	
 	if (NOT_INITIALIZED == possible_moves_lut_status)
 	{
 		InitPossibleMovesLutIMP();
 		possible_moves_lut_status = INITIALIZED;
 	}
-	
-	int direction_to_go = 0;
-	
-	int position_x_coordinate = 0, position_y_coordinate = 0;
-	
-	int position_with_min_steps = -1;
-	
-	time_t curr_time = time(&curr_time);
-	
-	IndexToCartesianIMP(position, &position_x_coordinate, &position_y_coordinate);
-	
-	/*	asserts*/
-	assert(path);
 	
 	/* timout of 2 minutes - if no solution has been found - exit the program */
 	if (difftime(curr_time, timer) >= TWO_MINUTES)
@@ -275,32 +275,49 @@ int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
 		return (1);
 	}
 	
-
 	/*	tick curr position at the board*/	
 	board = MarkPositionAsVisitedIMP(board, position); 
+	*path = position;
 	
-	HeuristicTourIMP(path + 1, GetPosWithMinSteps(position, board), board, timer);
+	if (!HeuristicTourIMP(path + 1, GetPosWithMinStepsIMP(position, previous_position), position, board, timer))
+	{
+		return (0);
+	}
 	
 	return (1);
 }
 /******************************************************************************/
-int GetPosWithMinStepsIMP(int position)
+int GetPosWithMinStepsIMP(int position, int previous_position)
 {
 	int pos_with_min_steps = -1, direction = 0, possible_position = 0;
 	
 	while (pos_with_min_steps == -1)
 	{
-		pos_with_min_steps = GetNextPositionIMP(position, direction);
+		
+		possible_position = GetNextPositionIMP(position, direction);
+		
+		if (previous_position != possible_position)
+		{
+			pos_with_min_steps = possible_position;
+		}
+		
 		++direction;
 	}
 	
 	for (direction = 0; direction < NUM_OF_DIRECTIONS; ++direction)
 	{
-		possible_position
-		if (GetNextPositionIMP(position, direction) < possible_moves_lut[pos_with_min_steps])
+		if (direction > 7)
+		printf("DIRECTION IS BIGGER");
+		possible_position = GetNextPositionIMP(position, direction);
+		
+		if (-1 != possible_position && previous_position != possible_position)
 		{
-			
+			pos_with_min_steps = (possible_moves_lut[possible_position]
+			< possible_moves_lut[pos_with_min_steps]) ? possible_position : 
+															pos_with_min_steps;
 		}
 	}
+	
+	return (pos_with_min_steps);
 }
 /******************************************************************************/

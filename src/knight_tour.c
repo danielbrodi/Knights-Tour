@@ -12,7 +12,7 @@
 
 #include <assert.h>		/*	assert					*/
 #include <stddef.h>		/*	size_t, NULL			*/
-#include <stdlib.h>		/*	exit					*/
+#include <stdlib.h>		/*	exit, qsort				*/
 #include <stdio.h>		/*	puts					*/
 #include <time.h> 		/*	time_t, difftime		*/
 
@@ -55,13 +55,13 @@ static void InitPossibleMovesLutIMP();
 /*	the huristic solution to find a path in the fastest way based on
  *	moving each time to the location with the minimum 
  *	number of unvisited adjacent										*/															
-static int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position, int previous_position,
-												bitsarr_ty board, time_t timer);											
+static int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
+												bitsarr_ty board, time_t timer);						
 /*	direction is 0-7, position is 0-63.
  *	Returns -1 if move in direction takes you out of the board			*/
 static int GetNextPositionIMP(int current_position, int direction);
 
-static int GetPosWithMinStepsIMP(int position, int previous_position);
+static void GetPosWithMinStepsIMP(int position, int possibilities_arr[]);
 
 /*	converts a given index to x and y coordinates of 0-7 each one 		*/
 static void IndexToCartesianIMP(int index, int *x_coordinate, int *y_coordinate);
@@ -79,6 +79,8 @@ static int HasPositionBeenVisitedBeforeIMP(bitsarr_ty board, int position);
 /*	marks a given position on the board as visited						*/
 static bitsarr_ty MarkPositionAsVisitedIMP(bitsarr_ty board, int position);
 
+static int CompareIntsIMP(const void *data1, const void *data2);
+
 /************************* Functions  Implementations *************************/
 int Tour(int position, unsigned char path[BOARD_SIZE])
 {
@@ -93,7 +95,7 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	assert(path);
 	
 /*	return (TourIMP(path, position, board, start_time));*/
-	return (HeuristicTourIMP(path, position, -1, board, start_time));
+	return (HeuristicTourIMP(path, position, board, start_time));
 }
 /******************************************************************************/
 int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
@@ -235,12 +237,16 @@ void InitPossibleMovesLutIMP()
 /*	}*/
 }
 /******************************************************************************/
-int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position, int previous_position,
+int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
 												bitsarr_ty board, time_t timer)
 {	
-	int position_x_coordinate = 0, position_y_coordinate = 0;
+	int position_x_coordinate = 0, position_y_coordinate = 0;	
 	
 	time_t curr_time = time(&curr_time);
+	
+	int possibilities[8] = {-1};
+	
+	int direction = 0;
 	
 	/*	asserts*/
 	assert(path);
@@ -277,47 +283,65 @@ int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position, int previous_
 	
 	/*	tick curr position at the board*/	
 	board = MarkPositionAsVisitedIMP(board, position); 
-	*path = position;
 	
-	if (!HeuristicTourIMP(path + 1, GetPosWithMinStepsIMP(position, previous_position), position, board, timer))
+	GetPosWithMinStepsIMP(position, possibilities);
+	
+	for (direction = NUM_OF_DIRECTIONS - possible_moves_lut[position]; 
+									direction < NUM_OF_DIRECTIONS; ++direction)
 	{
-		return (0);
+		if (!HeuristicTourIMP(path, possibilities[direction], board, timer))
+		{
+			 /* save the position that's correct in path array before exiting*/
+            *path = position;
+            
+            return (0);
+		}
 	}
 	
 	return (1);
 }
 /******************************************************************************/
-int GetPosWithMinStepsIMP(int position, int previous_position)
+void GetPosWithMinStepsIMP(int position, int *possibilities)
 {
-	int pos_with_min_steps = -1, direction = 0, possible_position = 0;
+	int direction = 0, possible_position = -1;
 	
-	while (pos_with_min_steps == -1)
-	{
-		
-		possible_position = GetNextPositionIMP(position, direction);
-		
-		if (previous_position != possible_position)
-		{
-			pos_with_min_steps = possible_position;
-		}
-		
-		++direction;
-	}
+	assert(possibilities);	
 	
+	printf("Before Sort:\n");
 	for (direction = 0; direction < NUM_OF_DIRECTIONS; ++direction)
-	{
-		if (direction > 7)
-		printf("DIRECTION IS BIGGER");
-		possible_position = GetNextPositionIMP(position, direction);
-		
-		if (-1 != possible_position && previous_position != possible_position)
-		{
-			pos_with_min_steps = (possible_moves_lut[possible_position]
-			< possible_moves_lut[pos_with_min_steps]) ? possible_position : 
-															pos_with_min_steps;
-		}
+	{	
+		possibilities[direction] = GetNextPositionIMP(position, direction);
+		printf("%d\n\n", possibilities[direction]);
 	}
 	
-	return (pos_with_min_steps);
+	printf("After sort:\n");
+	qsort(possibilities, NUM_OF_DIRECTIONS, sizeof(int), CompareIntsIMP);
+	for (direction = 0; direction < NUM_OF_DIRECTIONS; ++direction)
+	{	
+		printf("%d\n\n", possibilities[direction]);
+	}
+}
+/******************************************************************************/
+int CompareIntsIMP(const void *data1, const void *data2)
+{
+	int position1 = 0, position2 = 0;
+	
+	assert(data1);
+	assert(data2);
+	
+	position1 = *(int*)data1;
+	position2 = *(int*)data2;
+	
+	if (position1 == -1)
+	{
+		return (position1);
+	}
+	
+	if (position2 == -1)
+	{
+		return (1);
+	}
+	
+	return (possible_moves_lut[position1] - possible_moves_lut[position2]);
 }
 /******************************************************************************/

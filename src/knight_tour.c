@@ -307,19 +307,19 @@ void GetPosWithMinStepsIMP(int position, int *possibilities)
 	
 	assert(possibilities);	
 	
-	printf("Before Sort:\n");
+/*	printf("Before Sort:\n");*/
 	for (direction = 0; direction < NUM_OF_DIRECTIONS; ++direction)
 	{	
 		possibilities[direction] = GetNextPositionIMP(position, direction);
-		printf("%d\n\n", possibilities[direction]);
+/*		printf("%d\n\n", possibilities[direction]);*/
 	}
 	
-	printf("After sort:\n");
+/*	printf("After sort:\n");*/
 	qsort(possibilities, NUM_OF_DIRECTIONS, sizeof(int), CompareIntsIMP);
-	for (direction = 0; direction < NUM_OF_DIRECTIONS; ++direction)
-	{	
-		printf("%d\n\n", possibilities[direction]);
-	}
+/*	for (direction = 0; direction < NUM_OF_DIRECTIONS; ++direction)*/
+/*	{	*/
+/*		printf("%d\n\n", possibilities[direction]);*/
+/*	}*/
 }
 /******************************************************************************/
 int CompareIntsIMP(const void *data1, const void *data2)

@@ -121,6 +121,14 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 	/*	asserts*/
 	assert(path);
 	
+	/*	initalizes LUT of position and their future position based on each 
+	 *	direction. Initalized only on the first run of the program			*/
+	if (NOT_INITIALIZED == possible_moves_lut_status)
+	{
+		InitPossibleMovesLutIMP();
+		possible_moves_lut_status = INITIALIZED;
+	}
+	
 	/* timout of 2 minutes - if no solution has been found - exit the program */
 	if (difftime(curr_time, timer) >= TWO_MINUTES)
 	{
@@ -152,7 +160,7 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 															 ++direction_to_go)
     {
         /* if TourIMP(path+1,...) in direction succeeds*/
-        if (!TourIMP(path + 1, GetNextPositionIMP(position, direction_to_go),
+        if (!TourIMP(path + 1, next_positions_lut[position][direction_to_go],
          														board, timer))
         {
             /* save the position that's correct in path array before exiting*/

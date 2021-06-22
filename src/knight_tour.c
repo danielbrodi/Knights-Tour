@@ -253,8 +253,7 @@ int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
 	
 	int direction = 0, num_of_possible_directions = 0, possibilities[8] = {0};
 	
-	int *possibilities_start = possibilities;
-	int *start = possibilities;
+	int *possibilities_arr = possibilities;
 	
 	/*	asserts*/
 	assert(path);
@@ -272,16 +271,16 @@ int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
 	/*	copy all future locations to possibilities array	*/
 	while (direction < NUM_OF_DIRECTIONS)
 	{
-		*possibilities_start = next_positions_lut[position][direction];
+		*possibilities_arr = next_positions_lut[position][direction];
 		
-		++possibilities_start;
+		++possibilities_arr;
 		++direction;
 	}
 	
 	/*	sort the possible future positions based on the amount of their
 	 *	future legitimate moves. The array will be sorted from the 
 	 *	minimum to the maximum legitimate future positions.	*/
-	qsort(start, NUM_OF_DIRECTIONS, sizeof(int), ComparePositionsIMP);
+	qsort(possibilities, NUM_OF_DIRECTIONS, sizeof(int), ComparePositionsIMP);
 
 	/* timout of 2 minutes - if no solution has been found - exit the program */
 	if (difftime(curr_time, timer) >= TWO_MINUTES)

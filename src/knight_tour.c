@@ -2,7 +2,7 @@
 * File:				knight_tour.c
 * Author:			Daniel Brodsky				 		  												  								
 * Date:				14-06-2021
-* Code Reviewer:						   								
+* Code Reviewer:	Ariel					   								
 * Version:			1.5   								
 * Description:		Implementation of a basic and heuristic solutions for
 					The Knight’s Tour problem, using a bit array.
@@ -91,7 +91,7 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	time_t start_time = time(&start_time);
 	
 	/*	asserts*/
-	assert(position > -1);
+	assert(position > -1 && position < 64);
 	assert(path);
 	
 /*	return (TourIMP(path, position, board, start_time));*/
@@ -107,7 +107,8 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 	
 	time_t curr_time = time(&curr_time);
 	
-	IndexToCartesianIMP(position, &position_x_coordinate, &position_y_coordinate);
+	IndexToCartesianIMP(position, &position_x_coordinate,
+														&position_y_coordinate);
 	
 	/*	asserts*/
 	assert(path);
@@ -209,7 +210,8 @@ void IndexToCartesianIMP(int index, int *x_coordinate, int *y_coordinate)
 /******************************************************************************/
 int CartesianToIndexIMP(int x_coordinate, int y_coordinate)
 {
-	assert(x_coordinate >= 0 && y_coordinate >= 0);
+	assert(x_coordinate >= 0 && y_coordinate >= 0 && 
+				y_coordinate < NUM_OF_ROWS && x_coordinate < NUM_OF_COLUMNS);
 	
 	return ((y_coordinate * NUM_OF_ROWS) + x_coordinate);
 }

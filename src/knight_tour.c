@@ -45,6 +45,7 @@ static int possible_moves_lut[64] = {0};
 static int next_positions_lut[64][8] = {0};
 
 static possibilities_lut_status_ty possible_moves_lut_status = NOT_INITIALIZED;
+
 /**************************** Forward Declarations ****************************/
 
 

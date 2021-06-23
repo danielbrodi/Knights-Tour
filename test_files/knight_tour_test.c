@@ -14,6 +14,7 @@
 #include <stdlib.h>		/* malloc, free */
 #include <string.h>		/* memcmp */
 #include <assert.h>		/* assert */
+#include <time.h>		/*	clock_t	*/
 
 #include "utils_testing_ariel.h"
 #include "knight_tour.h"
@@ -36,7 +37,11 @@ static int CompareFunc(const void *elem1, const void *elem2);
 
 int main()
 {
+	double execution_time = 0;
+	clock_t time_start, time_passed;
+	
 	status_ty status = FAILURE;
+	
 	int starting_square = 0;
 	
 	int cmd_quit = 0;
@@ -44,6 +49,8 @@ int main()
 	unsigned char path[64] = {0};
 	unsigned char sorted_path[64] = {0};
 	unsigned char test_path[64] = {0};
+	
+    time_start = clock();
 	
 	while (!cmd_quit)
 	{
@@ -66,6 +73,10 @@ int main()
 		}
 		
 		PRINT_SUCCESS(status)
+		time_passed = clock() - time_start;
+		execution_time = ((double)time_passed)/CLOCKS_PER_SEC;
+		
+		printf("The solution was found in %f seconds.\n", execution_time);
 	}
 	
 	return (0);

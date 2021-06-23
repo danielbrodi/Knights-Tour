@@ -15,6 +15,7 @@
 #include <string.h>		/* memcmp */
 #include <assert.h>		/* assert */
 #include <time.h>		/*	clock_t	*/
+#include <ctype.h>		/*	isdigit	*/
 
 #include "utils_testing_ariel.h"
 #include "knight_tour.h"
@@ -35,6 +36,7 @@ static int CompareFunc(const void *elem1, const void *elem2);
 
 /**************** MAIN *****************/
 
+/* main was written by Daniel Brodsky & Ariel White */
 int main()
 {
 	double execution_time = 0;
@@ -42,48 +44,65 @@ int main()
 	
 	status_ty status = FAILURE;
 	
-	int starting_square = 0;
+	char input_position[2] = {0};
 	
-	int cmd_quit = 0;
+	int run_program = 1, num_of_digits = 0, starting_square = 0, curr_char = 0;
 	
 	unsigned char path[64] = {0};
 	unsigned char sorted_path[64] = {0};
 	unsigned char test_path[64] = {0};
 	
-	while (!cmd_quit)
+    time_start = clock();
+	
+	while (run_program)
 	{
 		InitializeArray(test_path);
 		
-		printf("To quit the program, enter : \"-1\"\n");
-		printf("Enter a starting square between 0 and 63: ");
+		printf(YELLOW  "To quit the program, enter : \"-1\"\n" BLU);
+		printf("Enter a starting square between 0 and 63: " CYAN);
+		
+		scanf("%s" RESET, input_position);
+		
+		num_of_digits = strlen(input_position);
+		
+		for (curr_char = 0; curr_char < num_of_digits; ++curr_char)
+		{
+        	if (!isdigit(input_position[curr_char]))
+        	{
+        		printf(RED "Invalid input!\n" RESET);
+            	return (1);
+        	}
+		}
+		
+		starting_square = atoi(input_position);
+		
+		if ((starting_square < 0) ^ (starting_square > 64))
+		{
+			return (0);
+		}
+		
+		printf("\n");
 		
 		time_start = clock();
 		
-		scanf("%d", &starting_square);
-		
-		if (starting_square >= 0 && starting_square <= 63)
+		if (!Tour(starting_square, path))
 		{
-			printf("\n");
-			if (!Tour(starting_square, path))
-			{
-				ArrayCopyAndSort(sorted_path, path);
-				STATUS_TEST_3PARAM(memcmp, sorted_path, test_path, 64, 0, "Path")
-				PrintPath(path);
-				status = SUCCESS;
-			}
-			
-			PRINT_SUCCESS(status)
-			
-			time_passed = clock() - time_start;
-			execution_time = ((double)time_passed)/CLOCKS_PER_SEC;
-			
-			printf("The solution was found in %f seconds.\n", execution_time);
+			ArrayCopyAndSort(sorted_path, path);
+			STATUS_TEST_3PARAM(memcmp, sorted_path, test_path, 64, 0, "Path")
+			PrintPath(path);
+			status = SUCCESS;
 		}
 		
+		PRINT_SUCCESS(status)
+		time_passed = clock() - time_start;
+		execution_time = ((double)time_passed)/CLOCKS_PER_SEC;
+		
+		printf("The solution was found in %f seconds.\n", execution_time);
 	}
 	
 	return (0);
 }
+
 /************************ Testing Function Definitions ************************/
 
 /************ Helper Function Declarations ************/

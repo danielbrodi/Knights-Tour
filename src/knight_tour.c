@@ -2,7 +2,7 @@
 * File:				knight_tour.c
 * Author:			Daniel Brodsky				 		  												  								
 * Date:				14-06-2021
-* Code Reviewer:	Ariel					   								
+* Code Reviewer:	Ariel White				   								
 * Version:			2.0  								
 * Description:		Implementation of a basic and heuristic solutions for
 					The Knight’s Tour problem, using a bit array.
@@ -107,6 +107,9 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	assert(position > -1 && position < 64);
 	assert(path);
 	
+	/* initalize both LUT's	on the first run of the program	*/
+	InitPossibleMovesLutIMP();
+	
 	/*	the naive and simple solution	*/
 /*	return (TourIMP(path, position, board, start_time));*/
 	
@@ -128,14 +131,6 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 	
 	/*	asserts*/
 	assert(path);
-	
-	/*	initalizes LUT of position and their future position based on each 
-	 *	direction. Initalized only on the first run of the program			*/
-	if (NOT_INITIALIZED == possible_moves_lut_status)
-	{
-		InitPossibleMovesLutIMP();
-		possible_moves_lut_status = INITIALIZED;
-	}
 	
 	/* timout of 2 minutes - if no solution has been found - exit the program */
 	if (difftime(curr_time, timer) >= TWO_MINUTES)
@@ -296,9 +291,6 @@ int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
 	
 	IndexToCartesianIMP(position, &position_x_coordinate, 
 														&position_y_coordinate);
-	
-	/* initalize both LUT's	on the first run of the program	*/
-	InitPossibleMovesLutIMP();
 	
 	/* if each location at the board has been visited */
 	if (BitArrayCountOnLUT(board) == BOARD_SIZE)

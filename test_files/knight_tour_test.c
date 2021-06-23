@@ -50,33 +50,36 @@ int main()
 	unsigned char sorted_path[64] = {0};
 	unsigned char test_path[64] = {0};
 	
-    time_start = clock();
-	
 	while (!cmd_quit)
 	{
 		InitializeArray(test_path);
+		
 		printf("To quit the program, enter : \"-1\"\n");
 		printf("Enter a starting square between 0 and 63: ");
+		
+		time_start = clock();
+		
 		scanf("%d", &starting_square);
 		
-		if (starting_square < 0)
+		if (starting_square >= 0 && starting_square <= 63)
 		{
-			return (0);
-		}
 			printf("\n");
-		if (!Tour(starting_square, path))
-		{
-			ArrayCopyAndSort(sorted_path, path);
-			STATUS_TEST_3PARAM(memcmp, sorted_path, test_path, 64, 0, "Path")
-			PrintPath(path);
-			status = SUCCESS;
+			if (!Tour(starting_square, path))
+			{
+				ArrayCopyAndSort(sorted_path, path);
+				STATUS_TEST_3PARAM(memcmp, sorted_path, test_path, 64, 0, "Path")
+				PrintPath(path);
+				status = SUCCESS;
+			}
+			
+			PRINT_SUCCESS(status)
+			
+			time_passed = clock() - time_start;
+			execution_time = ((double)time_passed)/CLOCKS_PER_SEC;
+			
+			printf("The solution was found in %f seconds.\n", execution_time);
 		}
 		
-		PRINT_SUCCESS(status)
-		time_passed = clock() - time_start;
-		execution_time = ((double)time_passed)/CLOCKS_PER_SEC;
-		
-		printf("The solution was found in %f seconds.\n", execution_time);
 	}
 	
 	return (0);

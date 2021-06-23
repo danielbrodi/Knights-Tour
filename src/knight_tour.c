@@ -49,19 +49,23 @@ static possibilities_lut_status_ty possible_moves_lut_status = NOT_INITIALIZED;
 
 
 /*	recursively runs through all the options to cover the whole board 	*/
-static int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
-																time_t timer);
+static int TourIMP(unsigned char path[BOARD_SIZE], int position, 
+												bitsarr_ty board, time_t timer);
+
+/*	initalizes LUT's of the future moves of each position 
+ *	on the first run of the program 						*/
+static void InitPossibleMovesLutIMP(void);
 
 /*	creates a LUT of 512 : 8 possible moves for each position (64 positions).
- *	creates a LUT of 64: each index will store the amount of legitimate next 
- *	positions, still keep the knight in bounds of the board.			*/												
-static void InitPossibleMovesLutIMP();
+ *	creates a LUT of 64: each index will store the amount of legitimate moves,
+ *	which keep the knight in bounds of the board.			*/												
+static void CreatePossibleMovesLutIMP(void);
 
 /*	the huristic solution to find a path in the fastest way based on
  *	moving each time to the location with the minimum 
  *	number of unvisited adjacent										*/															
 static int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
-												bitsarr_ty board, time_t timer);						
+												bitsarr_ty board);						
 /*	direction is 0-7, position is 0-63.
  *	Returns -1 if move in direction takes you out of the board			*/
 static int GetNextPositionIMP(int current_position, int direction);
@@ -102,8 +106,11 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	assert(position > -1 && position < 64);
 	assert(path);
 	
+	/*	the naive and simple solution	*/
 /*	return (TourIMP(path, position, board, start_time));*/
-	return (HeuristicTourIMP(path, position, board, start_time));
+	
+	/*	the heuristic solution	*/
+	return (HeuristicTourIMP(path, position, board));
 }
 /******************************************************************************/
 int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
@@ -160,7 +167,7 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 															 ++direction_to_go)
     {
         /* if TourIMP(path+1,...) in direction succeeds*/
-        if (!TourIMP(path + 1, next_positions_lut[position][direction_to_go],
+        if (!TourIMP(path + 1, GetNextPositionIMP(position, direction_to_go),
          														board, timer))
         {
             /* save the position that's correct in path array before exiting*/
@@ -173,7 +180,7 @@ int TourIMP(unsigned char path[BOARD_SIZE], int position, bitsarr_ty board,
 	return (1);
 }
 /******************************************************************************/
-static int GetNextPositionIMP(int curr_position, int direction)
+int GetNextPositionIMP(int curr_position, int direction)
 {
 	/* LUTs which indicate on the change that made by each direction	*/
 	static const int MoveRowLUT[8] = {1, 2, 2, 1, -1, -2, -2, -1};
@@ -232,10 +239,21 @@ int CartesianToIndexIMP(int x_coordinate, int y_coordinate)
 	return ((y_coordinate * NUM_OF_ROWS) + x_coordinate);
 }
 /******************************************************************************/
-void InitPossibleMovesLutIMP()
+void InitPossibleMovesLutIMP(void)
+{
+	if (NOT_INITIALIZED == possible_moves_lut_status)
+	{
+		CreatePossibleMovesLutIMP();
+		possible_moves_lut_status = INITIALIZED;
+	}
+}
+/*----------------------------------------------------------------------------*/
+void CreatePossibleMovesLutIMP(void)
 {
 	int curr_position = 0, direction = 0, next_position = 0;
-	
+		
+	/*	creates a LUT of 512 : 8 possible moves for each position.
+	 *	some of the 8 possible moves may be invalid and out of bounds. */
 	for (curr_position = 0; curr_position < BOARD_SIZE; ++curr_position)
 	{
 		for (direction = 0; direction < NUM_OF_DIRECTIONS; ++direction)
@@ -244,24 +262,33 @@ void InitPossibleMovesLutIMP()
 			 
 			 next_positions_lut[curr_position][direction] = next_position;
 			 
+			 /*	creates a LUT of 64: each index will store the amount of 
+			  *	legitimate moves, which keep the knight in
+			  *	bounds of the board.			*/
 			 if (-1 != next_position)
 			 {
-			 	possible_moves_lut[curr_position] += 1;
+			 	++possible_moves_lut[curr_position];
 			 }
 		}
+	}
+	
+	/*	for each position, sort the possible future positions based on the
+	 *	amount of their future legitimate moves. The array will be sorted from
+	 *	the minimum to the maximum legitimate future positions.		*/ 
+	 
+	for (curr_position = 0; curr_position < BOARD_SIZE; ++curr_position)
+	{
+		qsort(next_positions_lut + curr_position, NUM_OF_DIRECTIONS, 
+											sizeof(int), ComparePositionsIMP);
 	}
 }
 /******************************************************************************/
 int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
-												bitsarr_ty board, time_t timer)
+															bitsarr_ty board)
 {	
 	int position_x_coordinate = 0, position_y_coordinate = 0;
 	
-	time_t curr_time = time(&curr_time);
-	
-	int direction = 0, num_of_possible_directions = 0, possibilities[8] = {0};
-	
-	int *possibilities_arr = possibilities;
+	int direction = 0, num_of_possible_directions = 0;
 	
 	/*	asserts*/
 	assert(path);
@@ -270,32 +297,7 @@ int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
 														&position_y_coordinate);
 	
 	/* initalize both LUT's	on the first run of the program	*/
-	if (NOT_INITIALIZED == possible_moves_lut_status)
-	{
-		InitPossibleMovesLutIMP();
-		possible_moves_lut_status = INITIALIZED;
-	}
-	
-	/*	copy all future locations to possibilities array	*/
-	while (direction < NUM_OF_DIRECTIONS)
-	{
-		*possibilities_arr = next_positions_lut[position][direction];
-		
-		++possibilities_arr;
-		++direction;
-	}
-	
-	/*	sort the possible future positions based on the amount of their
-	 *	future legitimate moves. The array will be sorted from the 
-	 *	minimum to the maximum legitimate future positions.	*/
-	qsort(possibilities, NUM_OF_DIRECTIONS, sizeof(int), ComparePositionsIMP);
-
-	/* timout of 2 minutes - if no solution has been found - exit the program */
-	if (difftime(curr_time, timer) >= TWO_MINUTES)
-	{
-		puts("Timeout Error: no solution has been found.");
-		exit(1);
-	}
+	InitPossibleMovesLutIMP();
 	
 	/* if each location at the board has been visited */
 	if (BitArrayCountOnLUT(board) == BOARD_SIZE)
@@ -323,10 +325,12 @@ int HeuristicTourIMP(unsigned char path[BOARD_SIZE], int position,
 	 *	invalid locations which indicated by (-1), which means they will
 	 *	be shown in the beginning of the array and the first valid location
 	 *	will appear on index of (num_of_directions - legitimate_future_moves) */
+	 
 	for (direction = num_of_possible_directions; direction < NUM_OF_DIRECTIONS;
 																	++direction)
 	{
-		if (!HeuristicTourIMP(path + 1, possibilities[direction], board, timer))
+		if (!HeuristicTourIMP(path + 1, next_positions_lut[position][direction],
+																		board))
 		{
 			/* save the position that's correct in path array before exiting*/
 			*path = position;

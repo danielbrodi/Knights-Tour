@@ -38,24 +38,35 @@ int main()
 {
 	status_ty status = FAILURE;
 	int starting_square = 0;
+	
+	int cmd_quit = 0;
+	
 	unsigned char path[64] = {0};
 	unsigned char sorted_path[64] = {0};
 	unsigned char test_path[64] = {0};
 	
-	InitializeArray(test_path);
-	printf("Enter a starting square between 0 and 63: ");
-	scanf("%d", &starting_square);
-	printf("\n");
-
-	if (!Tour(starting_square, path))
+	while (!cmd_quit)
 	{
-		ArrayCopyAndSort(sorted_path, path);
-		STATUS_TEST_3PARAM(memcmp, sorted_path, test_path, 64, 0, "Path")
-		PrintPath(path);
-		status = SUCCESS;
+		InitializeArray(test_path);
+		printf("To quit the program, enter : \"-1\"\n");
+		printf("Enter a starting square between 0 and 63: ");
+		scanf("%d", &starting_square);
+		
+		if (starting_square < 0)
+		{
+			return (0);
+		}
+			printf("\n");
+		if (!Tour(starting_square, path))
+		{
+			ArrayCopyAndSort(sorted_path, path);
+			STATUS_TEST_3PARAM(memcmp, sorted_path, test_path, 64, 0, "Path")
+			PrintPath(path);
+			status = SUCCESS;
+		}
+		
+		PRINT_SUCCESS(status)
 	}
-	
-	PRINT_SUCCESS(status)
 	
 	return (0);
 }

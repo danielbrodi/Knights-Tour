@@ -58,8 +58,7 @@ int main()
 	{
 		InitializeArray(test_path);
 		
-		printf(YELLOW  "To quit the program, enter : \"-1\"\n" BLU);
-		printf("Enter a starting square between 0 and 63: " CYAN);
+		printf(YELLOW "Enter a starting square between 0 and 63: " CYAN);
 		
 		scanf("%s" RESET, input_position);
 		

@@ -111,7 +111,7 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	InitPossibleMovesLutIMP();
 	
 	/*	the naive and simple solution	*/
-/*	return (TourIMP(path, position, board, start_time));*/
+	TourIMP(path, position, board, start_time);
 	
 	/*	the heuristic solution	*/
 	return (HeuristicTourIMP(path, position, board));

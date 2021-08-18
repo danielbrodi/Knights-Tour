@@ -1,10 +1,8 @@
 /******************************************************************************
- *	Author:		Ariel							 							  *
- *	file: 		knight_test.c										 		  *
+ *	Author:		Ariel White							 						  *
+ *	file: 		knight_tour_test.c										 	  *
  *	date: 		15-06-2021						 							  *
  *	version:	1.0							 								  *
- *	reviewer:	Olga						                  			   	  *
- *	description: knight tests												  *
  ******************************************************************************/
  
 /************ Includes ************/

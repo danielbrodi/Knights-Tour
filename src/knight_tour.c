@@ -4,8 +4,14 @@
 * Date:				14-06-2021
 * Code Reviewer:	Ariel White				   								
 * Version:			2.0  								
-* Description:		Implementation of a basic and heuristic solutions for
-					The Knight’s Tour problem, using a bit array.
+* Description:	   
+					Problem : A knight is placed on the first block of
+					an empty board and, moving according to the rules of chess,
+					must visit each square exactly once.
+					This is an implementation of both basic and heuristic
+					solutions for The Knight’s Tour problem, using a bit array.
+					Both are based on backtracking methods.
+					The heuristic solution is based on Warnsdorff’s algorithm.
 \******************************************************************************/
 
 /********************************* Inclusions *********************************/
@@ -48,10 +54,15 @@ static possibilities_lut_status_ty possible_moves_lut_status = NOT_INITIALIZED;
 
 /**************************** Forward Declarations ****************************/
 
+/*----------------------------------------------------------------------------*/
 
+/*	TODO The naive and simple solution - uncomment it to use it	*/
 /*	recursively runs through all the options to cover the whole board 	*/
-static int TourIMP(unsigned char path[BOARD_SIZE], int position, 
-												bitsarr_ty board, time_t timer);
+
+/*static int TourIMP(unsigned char path[BOARD_SIZE], int position, */
+/*												bitsarr_ty board, time_t timer);*/
+
+/*----------------------------------------------------------------------------*/
 
 /*	initalizes LUT's of the future moves of each position 
  *	on the first run of the program 						*/
@@ -110,8 +121,8 @@ int Tour(int position, unsigned char path[BOARD_SIZE])
 	/* initalize both LUT's	on the first run of the program	*/
 	InitPossibleMovesLutIMP();
 	
-	/*	the naive and simple solution	*/
-	TourIMP(path, position, board, start_time);
+	/*	TODO The naive and simple solution - uncomment it to use it	*/
+	/*	TourIMP(path, position, board, start_time);*/
 	
 	/*	the heuristic solution	*/
 	return (HeuristicTourIMP(path, position, board));

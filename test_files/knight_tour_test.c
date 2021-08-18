@@ -15,7 +15,7 @@
 #include <time.h>		/*	clock_t	*/
 #include <ctype.h>		/*	isdigit	*/
 
-#include "utils_testing_ariel.h"
+#include "utils_chess_board_display.h"
 #include "knight_tour.h"
 
 /************ Defines ************/

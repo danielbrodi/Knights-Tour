@@ -25,25 +25,25 @@ We will treat the chess board as 64 bits, which will be either 0 or 1 to indicat
 
 # Validate Legal Position
 
-**Each sqaure has 8 potential directions for the knight to go to.
-But not all squares have 8 valid options because sometimes some of the steps will move the knight beyond board boundries 
-i.e if we are looking at the chess board as a bit array whcih in 0 is first square on the board (top left corener) and 63 is the last square on the board (bottom right corner) so 65 is out of boundries as well as -1 and negative numbers.**
+**Each sqaure has 8 potential directions for the knight to go.
+But not all squares have 8 valid options because sometimes some of the steps will move the knight beyond board's boundries 
+i.e if we are looking at the chess board as a bit array, so index 0 is the first square on the board (top left corner) and index 63 is the last square on the board (bottom right corner). In this case - index 65 is out of boundries as well as -1 in fact every index that is not in the range of 0-63.**
 In my implementation, I use [`Cartesian to Index`](./src/knight_tour.c#L241) and [`Index to Cartesian`](./src/knight_tour.c#L233) converstion to convert indexes (0,1,2,...63) to (row,column) format.
 For example:
 * 0 -> 0,0
 * 9 -> 1,1 (I start counting from 0).
 * 0,1 -> 8
 
-and in this way, its easier to check if the next move brings the knight to an illegal position (out of boundries for example if the row or column number is not in the range of 0-7) - [`IsPositionOutOfBoundsIMP`](./src/knight_tour.c#L220) and [`HasPositionBeenVisitedBeforeIMP`](./src/knight_tour.c#L226)
+and in this way, its easier to check if the next move brings the knight to an illegal position (out of boundries for example if the row or column number is not in the range of 0-7(or as many rows and columns there are) - [`IsPositionOutOfBoundsIMP`](./src/knight_tour.c#L220) and [`HasPositionBeenVisitedBeforeIMP`](./src/knight_tour.c#L226)
 
 ![knight rules](./images/knight_rules.png)
 
 # Naive Algorithm - Brute Force Solution
   ## The implementation of this algorithm is the [`TourIMP` function](./src/knight_tour.c#L131).
 
-The Naive Algorithm is to generate all tours one by one and check if the generated tour satisfies the constraints (a square can be visited only once and the knight must stay in board boundries).
+The Naive Algorithm is to generate all tours one by one and check if the generated tour satisfies the constraints (a square can be visited only once and the knight must stay in board's boundries).
 
-Typically, we start from an empty bit map and one by one add moves and steps. When we add a move, we check if adding the square that the knight reached to violates the problem constraint, if it does then we try other alternatives. 
+Typically, we start from an empty bit map and one by one add moves(steps). When we add a move, we check if adding the square that the knight reached to violates the problem constraint, if it does then we try other alternatives. 
 
 If none of the alternatives works out then we go to the previous stage and remove the square/step added in the previous stage. If we reach the initial stage back then we say that no solution exists. If adding a step that doesn’t violate constraints then we recursively add moves/squares one by one. If the solution bit map becomes complete (all bits are set - means all squares have been visited) then we print the solution.
 
@@ -77,7 +77,7 @@ Else
   
   # Warnsdorff’s Algorithm - Heuristic Solution
   
-  Theheuristic solution proposed in 1823 by the German mathematician H.C. Warnsdorff that states the following simple rule: 
+  The heuristic solution proposed in 1823 by the German mathematician H.C. Warnsdorff that states the following simple rule: 
 #### Always move the knight to an adjacent, unvisited square with minimal degree.
   
   #### For this soltion we are going to need 2 look up tables:

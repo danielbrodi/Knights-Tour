@@ -1,4 +1,4 @@
-# The Knight’s Tour Problem – Implementation of Heuristic & Naive Solutions
+# The Knight’s Tour Problem – Implementation of the Heuristic & the Naive Solutions
 
 # Introduction
 

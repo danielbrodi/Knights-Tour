@@ -1,5 +1,7 @@
 # The Knight’s Tour Problem – Backtracking Recursive Solutions
 
+![screenshot3](./images/screenshot2.png)
+
 # Introduction
 
 The knight’s tour puzzle is played on a chess board with a single chess piece, the knight. 
@@ -47,7 +49,7 @@ If none of the alternatives works out then we go to the previous stage and remov
 
 The knight will start from an empty square and then just try each option out of the 8 potential future moves by [GetNextPositionIMP function](.src/knight_tour.c#L190).
 
-The upper bound on the number of possible legal tours for an eight-by-eight chessboard is known to be ![equation](http://www.sciweavers.org/tex2img.php?eq=%201.305%C3%9710351.305%20%5Ctimes%2010%5E%7B35%7D1.305%C3%9710%E2%80%8B35%E2%80%8B%E2%80%8B&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0).
+The upper bound on the number of possible legal tours for an eight-by-eight chessboard is known to be ![equation](http://www.sciweavers.org/tex2img.php?eq=4X10%5E%7B51%7D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0).
 However, there are even more possible dead ends. Clearly this is a some real computing power, or a lot of time.
 There are `N^2` Cells and for each, we have a maximum of 8 possible moves to choose from, so the worst running time is `O(8N^2)`.
 For that exact reason, I have also added a timeout of 2 minutes (or any other time if you want to change it) for finding a solution.
@@ -125,7 +127,27 @@ because Warnsdorff’s rule is heuristic, it is not guaranteed to find a solutio
 
 ## The implementation of this algorithm is the [`HeuristicTourIMP` function](./src/knight_tour.c#L293).
 
-# Compiling 
+# Compiling and Running
+
+A [Makefile](./makefile) is available to compile and get an executable file which runs the [test file](./test_files/knight_tour_test.c), and represents
+a visual solution of any received starting points along with the time it took to find it with the heuristic algorithm.
+
+`make` or `make all` will build a `knight_tour` executable file which can run and asks the user to insert a start point for the knight's tour,
+and then prints the solution as a chess board a number on each square.
+Each number represents the numbers of step that it will take to the knight to get to that square.
+
+```
+00 is the first step
+01 the second step
+....
+...
+63 is the last step
+```
+
+## Screenshots of the program
+
+![screenshot1](./images/screenshot3.png)
+![screenshot2](./images/screenshot1.png)
 
 
 

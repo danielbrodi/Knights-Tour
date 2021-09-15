@@ -144,7 +144,7 @@ Each number represents the numbers of step that it will take to the knight to ge
 63 is the last step
 ```
 
-## Screenshots of the program
+# Screenshots
 
 ![screenshot1](./images/screenshot3.png)
 ![screenshot2](./images/screenshot1.png)
